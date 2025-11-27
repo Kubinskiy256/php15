@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Список заказов</title>
+</head>
+<body>
+    <div>
+        <h1>Список заказов</h1>  
+
+        <a href="{{ path('app_order_new') }}">Создать новый заказ       </a>
+        <a href="{{ path('app_dish_new') }}">Создать новое блюдо         </a>
+        <a href="{{ path('app_client_new') }}">Создать нового клиента</a>
+        <a href="{{ path('app_order_export_excel') }}">Скачать все заказы в excel</a>
+
+        {% if orders|length > 0 %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Клиент</th>
+                        <th>Телефон</th>
+                        <th>Блюда</th>
+                        <th>Общая стоимость</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.client.name }}</td>
+                            <td>{{ order.client.phoneNumber }}</td>
+                            <td>
+                                {% for dish in order.dish %}
+                                    {{ dish.name }} ({{ dish.price }} руб.)<br>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% set total = 0 %}
+                                {% for dish in order.dish %}
+                                    {% set total = total + dish.price %}
+                                {% endfor %}
+                                {{ total }} руб.
+                            </td>
+                            <td>
+                                 <a href="{{ path('app_order_show', {'id': order.id}) }}">Просмотр</a>
+                                 <a href="{{ path('app_order_edit', {'id': order.id}) }}" >Изменить</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Список клиентов</th>
+                        <th>Список блюд</th>
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr>
+                            <td><a href="{{ path('app_client_index') }}">Просмотр</a></td>
+                            <td><a href="{{ path('app_dish_index') }}">Просмотр</a></td>
+                            
+                        </tr>
+                </tbody>
+            </table>
+
+        {% else %}
+            <div>Заказов пока нет</div>
+        {% endif %}
+    </div>
+</body>
+</html>

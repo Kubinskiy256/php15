@@ -1,139 +1,17 @@
-{# templates/order/new.html.twig #}
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
 
-{% block title %}Создать заказ - Ресторан{% endblock %}
+<title>Создание нового заказа</title>
 
 {% block body %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">
-                    <i class="bi bi-cart-plus"></i> Создать новый заказ
-                </h4>
-            </div>
-            <div class="card-body">
-                {{ form_start(form) }}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-4">
-                                <h5 class="text-primary mb-3">
-                                    <i class="bi bi-person"></i> Выберите клиента
-                                </h5>
-                                {{ form_row(form.client, {
-                                    'label': 'Клиент *',
-                                    'attr': {
-                                        'class': 'form-select' ~ (form.client.vars.errors|length ? ' is-invalid' : '')
-                                    }
-                                }) }}
-                                {% if form.client.vars.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form_errors(form.client) }}
-                                    </div>
-                                {% endif %}
-                                <div class="form-text">
-                                    Если клиента нет в списке, 
-                                    <a href="{{ path('app_client_new') }}" target="_blank" class="text-decoration-none">
-                                        создайте нового клиента
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-4">
-                                <h5 class="text-success mb-3">
-                                    <i class="bi bi-egg"></i> Выберите блюда
-                                </h5>
-                                {{ form_row(form.orderDishes, {
-                                    'label': 'Блюда *',
-                                    'attr': {
-                                        'class': 'form-select' ~ (form.orderDishes.vars.errors|length ? ' is-invalid' : ''),
-                                        'size': 6
-                                    }
-                                }) }}
-                                {% if form.orderDishes.vars.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form_errors(form.orderDishes) }}
-                                    </div>
-                                {% endif %}
-                                <div class="form-text">
-                                    Удерживайте Ctrl для выбора нескольких блюд. 
-                                    <a href="{{ path('app_dish_new') }}" target="_blank" class="text-decoration-none">
-                                        Добавить новое блюдо
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <h1>Создание нового заказа</h1>
 
-                    {# Предварительный расчет суммы #}
-                    <div class="card bg-light mb-4">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <i class="bi bi-calculator"></i> Предварительный расчет
-                            </h6>
-                            <div id="order-summary" class="text-muted">
-                                Выберите блюда для расчета суммы
-                            </div>
-                        </div>
-                    </div>
+    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+        {{ form_row(form.dish) }}
+        {{ form_row(form.client) }}
+        {{ form_row(form.uploadedFiles) }}
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check-circle"></i> Создать заказ
-                        </button>
-                        <a href="{{ path('app_order_index') }}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Назад к заказам
-                        </a>
-                    </div>
-                {{ form_end(form) }}
-            </div>
-        </div>
-    </div>
-</div>
+        <button class="btn">{{ button_label|default('Создать') }}</button>
+    {{ form_end(form) }}
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dishSelect = document.querySelector('#{{ form.orderDishes.vars.id }}');
-    const summaryElement = document.getElementById('order-summary');
-    
-    function updateOrderSummary() {
-        const selectedOptions = Array.from(dishSelect.selectedOptions);
-        let total = 0;
-        let dishesList = [];
-        
-        selectedOptions.forEach(option => {
-            const price = parseFloat(option.getAttribute('data-price'));
-            if (!isNaN(price)) {
-                total += price;
-                dishesList.push({
-                    name: option.text,
-                    price: price
-                });
-            }
-        });
-        
-        if (dishesList.length > 0) {
-            let html = '<div class="row">';
-            html += '<div class="col-md-6">';
-            html += '<strong>Выбранные блюда:</strong><br>';
-            dishesList.forEach(dish => {
-                html += `<span class="badge bg-secondary me-1 mb-1">${dish.name} - ${dish.price} ₽</span><br>`;
-            });
-            html += '</div>';
-            html += '<div class="col-md-6">';
-            html += `<strong>Общая сумма:</strong><br>`;
-            html += `<span class="fs-4 text-success fw-bold">${total.toFixed(2)} ₽</span>`;
-            html += '</div>';
-            html += '</div>';
-            summaryElement.innerHTML = html;
-        } else {
-            summaryElement.innerHTML = '<span class="text-muted">Выберите блюда для расчета суммы</span>';
-        }
-    }
-    
-    dishSelect.addEventListener('change', updateOrderSummary);
-    updateOrderSummary(); // Initial calculation
-});
-</script>
+    <a href="{{ path('app_order_index') }}">К списку заказов</a>
 {% endblock %}

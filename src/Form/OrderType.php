@@ -2,35 +2,39 @@
 
 namespace App\Form;
 
-use App\Entity\Order;
 use App\Entity\Client;
 use App\Entity\Dish;
+use App\Entity\Order;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class OrderType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('dish', EntityType::class, [
+                'class' => Dish::class,
+                'choice_label' => 'name',
+                'multiple' => true,
+                'label' => 'Блюда',
+            ])
             ->add('client', EntityType::class, [
                 'class' => Client::class,
-                'choice_label' => function(Client $client) {
-                    return $client->getName() . ($client->getPhone() ? ' (' . $client->getPhone() . ')' : '');
-                },
-                'placeholder' => 'Выберите клиента',
-                'attr' => ['class' => 'form-select']
+                'choice_label' => 'name',
+                'label' => 'Клиенты',
             ])
-            ->add('orderItems', CollectionType::class, [
-                'entry_type' => OrderItemType::class,
-                'entry_options' => ['label' => false],
-                'allow_add' => true,
-                'allow_delete' => true,
-                'by_reference' => false,
-                'label' => 'Блюда в заказе',
+            ->add('uploadedFiles', FileType::class, [
+                'label' => 'Файлы заказа',
+                'multiple' => true, 
+                'required' => false,
+                'mapped' => false, 
+                
             ])
         ;
     }

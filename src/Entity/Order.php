@@ -6,6 +6,7 @@ use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
@@ -17,38 +18,86 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull(message: "Клиент обязателен")]
+
+    /**
+     * @var Collection<int, Dish>
+     */
+    #[Assert\Count(
+        min: 1,
+        minMessage: 'Нужен хотя бы один заказ',
+    )]
+    #[ORM\ManyToMany(targetEntity: Dish::class)]
+    private Collection $dish;
+
+    #[ORM\ManyToOne]
     private ?Client $client = null;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private ?string $totalAmount = null;
-
-    #[ORM\Column(length: 20)]
-    private ?string $status = 'pending';
-
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'])]
-    #[Assert\Valid]
-    #[Assert\Count(min: 1, minMessage: "Заказ должен содержать хотя бы одно блюдо")]
-    private Collection $orderItems;
-
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderFile::class, cascade: ['persist', 'remove'])]
-    private Collection $orderFiles;
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+     #[ORM\OneToMany(targetEntity: OrderFile::class, mappedBy: 'order', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $files;
 
     public function __construct()
     {
-        $this->orderItems = new ArrayCollection();
-        $this->orderFiles = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
+        $this->dish = new ArrayCollection();
+        $this->files = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, OrderFile>
+     */
+
+    public function getFiles(): Collection
+    {
+        return $this->files;
+    }
+
+    public function addFile(OrderFile $file): static
+    {
+        if (!$this->files->contains($file)) {
+            $this->files->add($file);
+            $file->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFile(OrderFile $file): static
+    {
+        if ($this->files->removeElement($file)) {
+            if ($file->getOrder() === $this) {
+                $file->setOrder(null);
+            }
+        }
+
+        return $this;
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @return Collection<int, Dish>
+     */
+    public function getDish(): Collection
+    {
+        return $this->dish;
+    }
+
+    public function addDish(Dish $dish): static
+    {
+        if (!$this->dish->contains($dish)) {
+            $this->dish->add($dish);
+        }
+
+        return $this;
+    }
+
+    public function removeDish(Dish $dish): static
+    {
+        $this->dish->removeElement($dish);
+
+        return $this;
     }
 
     public function getClient(): ?Client
@@ -61,120 +110,5 @@ class Order
         $this->client = $client;
 
         return $this;
-    }
-
-    public function getTotalAmount(): ?string
-    {
-        return $this->totalAmount;
-    }
-
-    public function setTotalAmount(string $totalAmount): static
-    {
-        $this->totalAmount = $totalAmount;
-
-        return $this;
-    }
-
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, OrderItem>
-     */
-    public function getOrderItems(): Collection
-    {
-        return $this->orderItems;
-    }
-
-    public function addOrderItem(OrderItem $orderItem): static
-    {
-        if (!$this->orderItems->contains($orderItem)) {
-            $this->orderItems->add($orderItem);
-            $orderItem->setOrder($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOrderItem(OrderItem $orderItem): static
-    {
-        if ($this->orderItems->removeElement($orderItem)) {
-            // set the owning side to null (unless already changed)
-            if ($orderItem->getOrder() === $this) {
-                $orderItem->setOrder(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, OrderFile>
-     */
-    public function getOrderFiles(): Collection
-    {
-        return $this->orderFiles;
-    }
-
-    public function addOrderFile(OrderFile $orderFile): static
-    {
-        if (!$this->orderFiles->contains($orderFile)) {
-            $this->orderFiles->add($orderFile);
-            $orderFile->setOrder($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOrderFile(OrderFile $orderFile): static
-    {
-        if ($this->orderFiles->removeElement($orderFile)) {
-            // set the owning side to null (unless already changed)
-            if ($orderFile->getOrder() === $this) {
-                $orderFile->setOrder(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function calculateTotal(): void
-    {
-        $total = '0';
-        foreach ($this->orderItems as $item) {
-            $total = bcadd($total, bcmul($item->getPrice(), (string)$item->getQuantity(), 2), 2);
-        }
-        $this->totalAmount = $total;
-    }
-
-    public function getStatusBadgeClass(): string
-    {
-        return match($this->status) {
-            'pending' => 'warning',
-            'completed' => 'success',
-            'cancelled' => 'danger',
-            default => 'secondary'
-        };
     }
 }

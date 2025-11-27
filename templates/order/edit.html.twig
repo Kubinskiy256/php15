@@ -1,91 +1,59 @@
-{# templates/order/edit.html.twig #}
-{% extends 'base.html.twig' %}
 
-{% block title %}Редактировать заказ - Ресторан{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Редактирование заказа</title>
+</head>
+<body>
+    <h1>Редактирование заказа: {{ order.id }}</h1>
 
-{% block body %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">
-                    <i class="bi bi-pencil"></i> Редактировать заказ #{{ order.id }}
-                </h4>
+    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+        {{ form_row(form.dish) }}
+        {{ form_row(form.client) }}
+        {{ form_row(form.uploadedFiles) }}
+
+        {% if order.files %}
+            <div style="margin-top: 20px;">
+                <p><strong>Текущие файлы:</strong></p>
+                <ul>
+                    {% for file in order.files %}
+                        <li>
+                            <a href="{{ path('app_order_download_file', {'id': order.id, 'fileId': file.id}) }}">
+                                Файл {{ loop.index }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
-            <div class="card-body">
-                {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-4">
-                                <h5 class="text-primary mb-3">
-                                    <i class="bi bi-person"></i> Клиент
-                                </h5>
-                                {{ form_row(form.client, {
-                                    'label': 'Клиент *',
-                                    'attr': {
-                                        'class': 'form-select' ~ (form.client.vars.errors|length ? ' is-invalid' : '')
-                                    }
-                                }) }}
-                                {% if form.client.vars.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form_errors(form.client) }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-4">
-                                <h5 class="text-success mb-3">
-                                    <i class="bi bi-egg"></i> Блюда
-                                </h5>
-                                {{ form_row(form.orderDishes, {
-                                    'label': 'Блюда *',
-                                    'attr': {
-                                        'class': 'form-select' ~ (form.orderDishes.vars.errors|length ? ' is-invalid' : ''),
-                                        'size': 6
-                                    }
-                                }) }}
-                                {% if form.orderDishes.vars.errors %}
-                                    <div class="invalid-feedback d-block">
-                                        {{ form_errors(form.orderDishes) }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+        {% endif %}
 
-                    <div class="card bg-light mb-4">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <i class="bi bi-info-circle"></i> Информация о заказе
-                            </h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <strong>Текущая сумма:</strong> 
-                                    <span class="text-success fw-bold">{{ order.totalPrice }} ₽</span>
-                                </div>
-                                <div class="col-md-6">
-                                    <strong>Дата создания:</strong> 
-                                    {{ order.createdAt|date('d.m.Y H:i') }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-warning">
-                            <i class="bi bi-check-circle"></i> Обновить заказ
-                        </button>
-                        <a href="{{ path('app_order_index') }}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Отмена
-                        </a>
-                        <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-outline-primary">
-                            <i class="bi bi-eye"></i> Просмотр
-                        </a>
-                    </div>
-                {{ form_end(form) }}
-            </div>
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+            <a href="{{ path('app_order_index') }}" class="btn btn-secondary">Назад к списку</a>
         </div>
+    {{ form_end(form) }}
+
+    <div style="margin-top: 20px;">
+        {% if order.files %}
+            {% for file in order.files %}
+                <div style="margin-bottom: 10px;">
+                    Файл {{ loop.index }}
+                    <form method="post" action="{{ path('app_order_delete_file', {'id': order.id, 'fileId': file.id}) }}" 
+                          style="display: inline;"
+                          onsubmit="return confirm('Удалить этот файл?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete-file-' ~ file.id) }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Удалить файл</button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{{ path('app_order_delete', {'id': order.id}) }}" 
+              style="margin-top: 10px;"
+              onsubmit="return confirm('Удалить этот заказ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+            <button type="submit" class="btn btn-danger">Удалить заказ</button>
+        </form>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

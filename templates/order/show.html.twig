@@ -1,156 +1,79 @@
-{# templates/order/show.html.twig #}
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <h1>Заказ {{ order.id }}</h1>
+        
+        <a href="{{ path('app_order_index') }}" >Назад</a>
 
-{% block title %}Заказ #{{ order.id }} - Ресторан{% endblock %}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        
 
-{% block body %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">
-                    <i class="bi bi-receipt"></i> Заказ #{{ order.id }}
-                </h4>
-                <div class="btn-group">
-                    <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-warning btn-sm">
-                        <i class="bi bi-pencil"></i> Редактировать
-                    </a>
-                    <form method="post" 
-                          action="{{ path('app_order_delete', {'id': order.id}) }}" 
-                          class="d-inline" 
-                          onsubmit="return confirm('Вы уверены, что хотите удалить этот заказ?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
-                        <button type="submit" class="btn btn-danger btn-sm">
-                            <i class="bi bi-trash"></i> Удалить
-                        </button>
-                    </form>
-                </div>
+        <div>
+            <div>
+                <h5>Информация о клиенте</h5>
+                <p><strong>Имя:</strong> {{ order.client.name }}</p>
+                <p><strong>Телефон:</strong> {{ order.client.phoneNumber }}</p>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card bg-light mb-4">
-                            <div class="card-header">
-                                <h6 class="card-title mb-0">
-                                    <i class="bi bi-person"></i> Информация о клиенте
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-borderless table-sm">
-                                    <tr>
-                                        <th width="40%">Имя:</th>
-                                        <td>
-                                            <a href="{{ path('app_client_show', {'id': order.client.id}) }}" class="text-decoration-none fw-bold">
-                                                {{ order.client.name }}
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Телефон:</th>
-                                        <td>
-                                            {% if order.client.phone %}
-                                                <a href="tel:{{ order.client.phone }}" class="text-decoration-none">
-                                                    <i class="bi bi-telephone"></i> {{ order.client.phone }}
-                                                </a>
-                                            {% else %}
-                                                <span class="text-muted">Не указан</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Дата регистрации:</th>
-                                        <td>{{ order.client.createdAt|date('d.m.Y H:i') }}</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card bg-light mb-4">
-                            <div class="card-header">
-                                <h6 class="card-title mb-0">
-                                    <i class="bi bi-info-circle"></i> Детали заказа
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-borderless table-sm">
-                                    <tr>
-                                        <th width="40%">ID заказа:</th>
-                                        <td><strong>#{{ order.id }}</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Дата создания:</th>
-                                        <td>{{ order.createdAt|date('d.m.Y H:i') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Количество блюд:</th>
-                                        <td>{{ order.orderDishes|length }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Общая сумма:</th>
-                                        <td>
-                                            <span class="badge bg-success fs-6">{{ order.totalPrice }} ₽</span>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        
+       
+        <div>
+            <div>
+                <h5>Состав заказа</h5>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Блюдо</th>
+                            <th>Цена</th>
+                        </tr>
+                    </thead>
+                    <tbody> 
+                        {% set total = 0 %}
+                        {% for dish in order.dish %}
+                            <tr>
+                                <td>{{ dish.name }}</td>
+                                <td>{{ dish.price }} руб.</td>
+                            </tr> 
+                            {% set total = total + dish.price %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Общая стоимость:</th>
+                            <th>{{ total }} руб.</th>
+                        </tr>
+                    </tfoot>
+                </table>
 
-                {# Список блюд в заказе #}
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-egg"></i> Состав заказа
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        {% if order.orderDishes|length > 0 %}
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Блюдо</th>
-                                            <th class="text-end">Цена</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for orderDish in order.orderDishes %}
-                                            <tr>
-                                                <td>
-                                                    <a href="{{ path('app_dish_show', {'id': orderDish.dish.id}) }}" class="text-decoration-none">
-                                                        {{ orderDish.dish.name }}
-                                                    </a>
-                                                </td>
-                                                <td class="text-end">{{ orderDish.dish.price }} ₽</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                    <tfoot class="table-group-divider">
-                                        <tr>
-                                            <th class="text-end">Итого:</th>
-                                            <th class="text-end text-success fs-5">{{ order.totalPrice }} ₽</th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="text-center py-3">
-                                <i class="bi bi-egg display-1 text-muted"></i>
-                                <p class="text-muted mt-3">В заказе нет блюд</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+
+    
+        <div>
+
+        <p><strong>Файлы:</strong></p>
+        {% if order.files|length > 0 %}
+            <ul>
+                {% for file in order.files %}
+                    <li>
+                        <a href="{{ path('app_order_download_file', {'id': order.id, 'fileId': file.id}) }}">
+                            Файл {{ loop.index }}
+                        </a>
+                        ({{ file.filePath|split('.')|last|upper }})
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Файлов нет</p>
+        {% endif %}
+
+      </div>
             </div>
         </div>
     </div>
-</div>
-
-<div class="mt-3">
-    <a href="{{ path('app_order_index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left"></i> Назад к заказам
-    </a>
-</div>
-{% endblock %}
+</body>
+</html>
