@@ -1,0 +1,4 @@
+<form method="post" action="{{ path('app_dish_delete', {'id': dish.id}) }}" onsubmit="return confirm('Удалить это блюдо?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ dish.id) }}">
+    <button class="btn">Удалить блюдо</button>
+</form>

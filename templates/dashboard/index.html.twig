@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Главная - Управление пищевым бизнесом{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Главная панель</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Клиенты</h5>
+                        <h2 class="mb-0">{{ clients_count ?? 0 }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                </div>
+                <a href="{{ path('app_client_index') }}" class="btn btn-light btn-sm mt-3">Управление</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Блюда</h5>
+                        <h2 class="mb-0">{{ dishes_count ?? 0 }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-egg fs-1"></i>
+                    </div>
+                </div>
+                <a href="{{ path('app_dish_index') }}" class="btn btn-light btn-sm mt-3">Управление</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Заказы</h5>
+                        <h2 class="mb-0">{{ orders_count ?? 0 }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-cart fs-1"></i>
+                    </div>
+                </div>
+                <a href="{{ path('app_order_index') }}" class="btn btn-light btn-sm mt-3">Управление</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Быстрые действия</h5>
+                <div class="btn-group">
+                    <a href="{{ path('app_client_new') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus"></i> Добавить клиента
+                    </a>
+                    <a href="{{ path('app_dish_new') }}" class="btn btn-outline-success">
+                        <i class="bi bi-plus-circle"></i> Добавить блюдо
+                    </a>
+                    <a href="{{ path('app_order_new') }}" class="btn btn-outline-warning">
+                        <i class="bi bi-cart-plus"></i> Создать заказ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

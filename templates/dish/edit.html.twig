@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Редактирование блюда</title>
+</head>
+<body>
+    <h1>Редактирование блюда: {{ dish.name }}</h1>
+
+    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+        {{ form_row(form.name) }}
+        {{ form_row(form.price) }}
+        {{ form_row(form.imageFile) }}
+
+        {% if dish.imagePath %}
+            <div class="current-image mb-3">
+                <p><strong>Текущее изображение:</strong></p>
+                <img src="{{ asset(dish.imagePath) }}" 
+                    
+                     style="max-width: 200px; max-height: 200px; border: 1px solid #ccc;">
+            </div>
+        {% else %}
+            <div class="no-image mb-3">
+                <p><strong>Изображение:</strong> не загружено</p>
+                <div style="width: 200px; height: 200px; background: #ddd; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #999;">Заглушка</span>
+                </div>
+            </div>
+        {% endif %}
+
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+            <a href="{{ path('app_dish_index') }}" class="btn btn-secondary">Назад к списку</a>
+        </div>
+    {{ form_end(form) }}
+
+    <div>
+
+     <form method="post" action="{{ path('app_dish_delete', {'id': dish.id}) }}" 
+              style="margin-top: 10px;"
+              onsubmit="return confirm('Удалить это блюдо?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ dish.id) }}">
+            <button class="btn btn-danger">Удалить блюдо</button>
+        </form>
+        
+        {% if dish.imagePath %}
+            <form method="post" action="{{ path('app_dish_delete_image', {'id': dish.id}) }}" 
+                  onsubmit="return confirm('Вы уверены, что хотите удалить изображение?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete-image' ~ dish.id) }}">
+                <button type="submit" class="btn btn-warning">Удалить изображение</button>
+            </form>
+        {% endif %}
+
+        
+    </div>
+
+    
+
+</body>
+</html>

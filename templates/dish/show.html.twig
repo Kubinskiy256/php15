@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Блюдо: {{ dish.name }}</title>
+</head>
+<body>
+    <h1>Блюдо: {{ dish.name }}</h1>
+
+    <p><strong>Цена:</strong> {{ dish.price }} руб.</p>
+
+    <div>
+        <strong>Фото:</strong><br>
+        {% if dish.imagePath %}
+            <img src="{{ asset(dish.imagePath) }}" 
+                 alt="{{ dish.name }}" 
+                 style="max-width: 400px; max-height: 400px;">
+            <br>
+            <a href="{{ path('app_dish_download', {'id': dish.id}) }}">Скачать фото</a>
+        {% else %}
+            <div style="width: 400px; height: 400px; background: #ddd; display: flex; align-items: center; justify-content: center;">
+                <span style="color: #999;">Фото не загружено</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <br>
+    <a href="{{ path('app_dish_edit', {'id': dish.id}) }}">Редактировать</a> |
+    <a href="{{ path('app_dish_index') }}">Назад к списку</a>
+</body>
+</html>
